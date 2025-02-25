@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Recipes by Tag</title>
+    <link rel="stylesheet" href="./css/main.css" />
+    <style>
+      .loader {
+        border: 4px solid #f3f3f3;
+        border-top: 4px solid #3498db;
+        border-radius: 50%;
+        width: 40px;
+        height: 40px;
+        animation: spin 1s linear infinite;
+        margin: 20px auto;
+      }
+      @keyframes spin {
+        0% { transform: rotate(0deg); }
+        100% { transform: rotate(360deg); }
+      }
+    </style>
+  </head>
+  <body>
+    <nav class="navbar">
+      <div class="nav-center">
+        <div class="nav-header">
+          <a href="index.html" class="nav-logo">
+            <img src="./assets/logo.svg" alt="Simply Recipes" />
+          </a>
+        </div>
+      </div>
+    </nav>
+
+    <main class="page">
+      <h4 id="tag-title">Loading...</h4>
+      <div class="recipes-list" id="recipes-container">
+        <div class="loader"></div>
+      </div>
+    </main>
+
+    <footer class="page-footer">
+      <p>&copy; <span id="date"></span> SimplyRecipes</p>
+    </footer>
+
+    <script>
+      async function fetchRecipesByTag(tag) {
+        try {
+          const response = await fetch(`https://www.themealdb.com/api/json/v1/1/filter.php?c=${tag}`);
+          const data = await response.json();
+          const meals = data.meals || [];
+
+          document.getElementById("tag-title").innerText = `Recipes for ${tag}`;
+
+          if (meals.length === 0) {
+            document.getElementById("recipes-container").innerHTML = "<p>No recipes found.</p>";
+            return;
+          }
+
+          document.getElementById("recipes-container").innerHTML = meals.map(meal => `
+            <a href="single-recipe.html" class="recipe">
+              <img src="${meal.strMealThumb}" class="img recipe-img" alt="${meal.strMeal}" />
+              <h5>${meal.strMeal}</h5>
+            </a>
+          `).join('');
+        } catch (error) {
+          console.error("Error fetching recipes:", error);
+          document.getElementById("recipes-container").innerHTML = "<p>Error loading recipes.</p>";
+        }
+      }
+
+      const params = new URLSearchParams(window.location.search);
+      const tag = params.get("tag");
+      if (tag) {
+        fetchRecipesByTag(tag);
+      } else {
+        document.getElementById("tag-title").innerText = "No tag selected.";
+      }
+    </script>
+  </body>
+</html>
